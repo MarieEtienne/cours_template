@@ -1,23 +1,27 @@
-name: slides
-
+name: website
 on:
   push:
-    branches: [ master ]
+    branches:
+      - master
+  pull_request:
+
 
 jobs:
   build:
+    name: Build website with quarto
     runs-on: ubuntu-latest
-    container: mpetienne/r-courses:0.32
+    container: mpetienne/maf:0.1
 
     steps:
-      - name: Checkout repository and submodules
+      - name: Checkout repository
         uses: actions/checkout@v2
-        with:
-          submodules: recursive
+      - name: Install R packages
+        run: |
+          Rscript -e "install.packages(c('GGally'))"
       - name: Generate slides
-        run: Rscript courses_tools/R/render_site.R
-      - name: Deploy
+        run: "quarto render"
+      - name: GitHub Pages action
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./render
+          publish_dir: ./_site
